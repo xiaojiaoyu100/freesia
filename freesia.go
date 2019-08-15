@@ -183,10 +183,8 @@ func (f *Freesia) sub() {
 					job.Fn = func(ctx context.Context, arg interface{}) error {
 						message := arg.(*redis.Message)
 						if message.Channel == channel {
-							if _, err := f.keyMeta(message.Payload); err == nil {
-								if err := f.Delete(message.Payload); err != nil {
-									f.monitor(fmt.Errorf("delete cache key = %s, err = %v", message.Payload, err))
-								}
+							if err := f.Delete(message.Payload); err != nil {
+								f.monitor(fmt.Errorf("delete cache key = %s, err = %v", message.Payload, err))
 							}
 						}
 						return nil
