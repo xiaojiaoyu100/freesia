@@ -2,13 +2,7 @@ package freesia
 
 type Setter func(f *Freesia) error
 
-func WithCodec(codec Codec) Setter {
-	return func(f *Freesia) error {
-		f.codec = codec
-		return nil
-	}
-}
-
+// WithMonitor sets a monitor.
 func WithMonitor(monitor Monitor) Setter {
 	return func(f *Freesia) error {
 		f.monitor = monitor

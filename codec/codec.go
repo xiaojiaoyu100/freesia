@@ -1,4 +1,4 @@
-package freesia
+package codec
 
 import "github.com/vmihailenco/msgpack"
 

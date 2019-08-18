@@ -1,13 +1,17 @@
 package freesia
 
 import (
-	"github.com/go-redis/redis"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type Store interface {
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
+	MSet(pairs ...interface{}) *redis.StatusCmd
 	Get(key string) *redis.StringCmd
+	MGet(keys ...string) *redis.SliceCmd
 	Del(keys ...string) *redis.IntCmd
+	Pipeline() redis.Pipeliner
 	Subscribe(channels ...string) *redis.PubSub
 }

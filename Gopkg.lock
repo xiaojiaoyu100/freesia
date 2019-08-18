@@ -43,14 +43,14 @@
 [[projects]]
   name = "github.com/xiaojiaoyu100/curlew"
   packages = ["."]
-  revision = "b417d61887972672762e95438f4828790e58641b"
-  version = "v0.0.1"
+  revision = "3e0da50a027b0e6ad1fbf8028b6b2aac1237c6c4"
+  version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/xiaojiaoyu100/roc"
   packages = ["."]
-  revision = "87ef0843ee09385c6e9ddd4a03b164f50570e79c"
+  revision = "6384f119cda28142f2fb2b59c30df071388fcee5"
+  version = "v0.0.1"
 
 [[projects]]
   branch = "master"
@@ -79,6 +79,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d1d53aed4cb2c8531c1b5b625c9d87c3ea825ac805e4344766f8270a2c0e822f"
+  inputs-digest = "a2af319620f81d61370418a298b131dd8759a4cda4c23db75a6b96e0bce06372"
   solver-name = "gps-cdcl"
   solver-version = 1
