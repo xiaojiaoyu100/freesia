@@ -14,4 +14,5 @@ type Store interface {
 	Del(keys ...string) *redis.IntCmd
 	Pipeline() redis.Pipeliner
 	Subscribe(channels ...string) *redis.PubSub
+	Publish(channel string, message interface{}) *redis.IntCmd
 }

@@ -18,6 +18,7 @@ type Freesia struct {
 	store      Store
 	cache      *roc.Cache
 	dispatcher *curlew.Dispatcher
+	pubsub     *redis.PubSub
 }
 
 func New(store Store, setters ...Setter) (*Freesia, error) {
@@ -43,6 +44,8 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	f.pubsub = f.store.Subscribe(channel)
 
 	f.sub()
 
@@ -149,7 +152,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		}
 	}
 	cmders, err := pipe.Exec()
-	if err != nil &&  err != redis.Nil {
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
@@ -221,15 +224,21 @@ func (f *Freesia) Del(keys ...string) error {
 	return nil
 }
 
+func (f *Freesia) Pub(keys ...string) error {
+	b, err := msgpack.Marshal(keys)
+	if err != nil {
+		return err
+	}
+	_, err = f.store.Publish(channel, string(b)).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (f *Freesia) sub() {
 	go func() {
-		pubSub := f.store.Subscribe(channel)
-		defer func() {
-			if err := pubSub.Close(); err != nil {
-				fmt.Printf("pubsub err = %#v", err)
-			}
-		}()
-		for message := range pubSub.Channel() {
+		for message := range f.pubsub.Channel() {
 			job := curlew.NewJob()
 			job.Arg = message
 			job.Fn = func(ctx context.Context, arg interface{}) error {
@@ -240,7 +249,7 @@ func (f *Freesia) sub() {
 				}
 				for _, key := range keys {
 					if err := f.cache.Del(key); err != nil {
-						fmt.Printf("CacheDeleteKey key = %s, err = %#v", key, err)
+						fmt.Printf("async delete key = %s, err = %#v", key, err)
 					}
 				}
 				return nil
