@@ -14,16 +14,11 @@ type Entry struct {
 	data             []byte
 	codec            codec.Codec
 	enableLocalCache bool
-	singleFlight     bool
 }
 
 func New(key string, value interface{}, expiration time.Duration) (*Entry, error) {
 	if key == "" {
 		return nil, errors.New("key length must greater than zero")
-	}
-
-	if value == nil {
-		return nil, errors.New("value must be non nil")
 	}
 
 	if expiration.String() == "0s" {
@@ -46,16 +41,8 @@ func (e *Entry) SetEnableLocalCache(b bool) {
 	e.enableLocalCache = b
 }
 
-func (e *Entry) SingleFlight() bool {
-	return e.singleFlight
-}
-
-func (e *Entry) SetSingleFlight(b bool) {
-	e.singleFlight = b
-}
-
 func (e *Entry) Encode() error {
-	if e.data == nil {
+	if e.data != nil {
 		return nil
 	}
 	b, err := e.codec.Encode(e.Value)
@@ -67,9 +54,21 @@ func (e *Entry) Encode() error {
 }
 
 func (e *Entry) Decode(data []byte) error {
-	return e.codec.Decode(data, e.Value)
+	if err := e.codec.Decode(data, e.Value); err != nil {
+		return err
+	}
+	e.data = data
+	return nil
 }
 
 func (e *Entry) Data() []byte {
 	return e.data
+}
+
+func KS(es ...*Entry) map[string]interface{} {
+	ret := make(map[string]interface{})
+	for _, e := range es {
+		ret[e.Key] = e.Value
+	}
+	return ret
 }
