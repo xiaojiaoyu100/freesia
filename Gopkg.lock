@@ -22,6 +22,12 @@
   version = "v1.3.2"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
   name = "github.com/vmihailenco/msgpack"
   packages = [
     ".",
@@ -45,6 +51,12 @@
   packages = ["."]
   revision = "3e0da50a027b0e6ad1fbf8028b6b2aac1237c6c4"
   version = "v0.1.0"
+
+[[projects]]
+  name = "github.com/xiaojiaoyu100/lizard"
+  packages = ["mass"]
+  revision = "a213a5010f622257d7542168bf262d842e8492b9"
+  version = "v0.0.1"
 
 [[projects]]
   name = "github.com/xiaojiaoyu100/roc"
@@ -79,6 +91,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a2af319620f81d61370418a298b131dd8759a4cda4c23db75a6b96e0bce06372"
+  inputs-digest = "24d3270a7a15bb4959917bc957a57eb7f533f214bce14b51eadab90d6818f8da"
   solver-name = "gps-cdcl"
   solver-version = 1

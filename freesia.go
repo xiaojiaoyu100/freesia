@@ -127,18 +127,29 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	for _, e := range es {
 		if e.EnableLocalCache() {
 			b, err := f.cache.Get(e.Key)
-			if data, ok := b.([]byte); ok && err == nil {
-				err := e.Decode(data)
+			switch err {
+			case roc.ErrMiss:
+				cmd := pipe.Get(e.Key)
+				ret[cmd] = e
+			case nil:
+				if data, ok := b.([]byte); ok {
+					err := e.Decode(data)
+					if err != nil {
+						return nil, err
+					}
+					found[e] = struct{}{}
+				}
+			default:
 				return nil, err
+
 			}
-			found[e] = struct{}{}
 		} else {
 			cmd := pipe.Get(e.Key)
 			ret[cmd] = e
 		}
 	}
 	cmders, err := pipe.Exec()
-	if err != nil {
+	if err != nil &&  err != redis.Nil {
 		return nil, err
 	}
 
