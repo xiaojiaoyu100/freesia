@@ -93,12 +93,16 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 func (f *Freesia) Get(e *entry.Entry) error {
 	if e.EnableLocalCache() {
 		data, err := f.cache.Get(e.Key)
-		if err == nil {
+		switch err {
+		case roc.ErrMiss:
+		case nil:
 			b, ok := data.([]byte)
-			if err := e.Decode(b); ok && err != nil {
+			if err = e.Decode(b); ok && err != nil {
 				return errors.Wrapf(err, "decode key = %s, data = %s", e.Key, b)
 			}
 			return nil
+		default:
+			return err
 		}
 	}
 	b, err := f.store.Get(e.Key).Bytes()
@@ -116,11 +120,10 @@ func (f *Freesia) Get(e *entry.Entry) error {
 		if err != nil {
 			return errors.Wrapf(err, "decode key = %s, data = %s", e.Key, b)
 		}
+		return nil
 	default:
 		return errors.Wrapf(err, "store get key = %s", e.Key)
 	}
-
-	return nil
 }
 
 func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
@@ -136,7 +139,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 				ret[cmd] = e
 			case nil:
 				if data, ok := b.([]byte); ok {
-					err := e.Decode(data)
+					err = e.Decode(data)
 					if err != nil {
 						return nil, err
 					}
@@ -151,11 +154,18 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 			ret[cmd] = e
 		}
 	}
+
+	// all keys found in local store.
+	if len(ret) == 0 {
+		return []*entry.Entry{}, nil
+	}
+
 	cmders, err := pipe.Exec()
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
+	msetEntries := make([]*entry.Entry, 0, len(cmders))
 	for _, cmder := range cmders {
 		cmd, ok := cmder.(*redis.StringCmd)
 		if !ok {
@@ -168,12 +178,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		b, err := cmd.Bytes()
 		switch err {
 		case redis.Nil:
-			j := curlew.NewJob()
-			j.Arg = e
-			j.Fn = func(ctx context.Context, arg interface{}) error {
-				return f.Set(arg.(*entry.Entry))
-			}
-			f.dispatcher.SubmitAsync(j)
+			msetEntries = append(msetEntries, e)
 		case nil:
 			err = e.Decode(b)
 			if err != nil {
@@ -190,6 +195,14 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		if !ok {
 			missEntries = append(missEntries, e)
 		}
+	}
+	if len(msetEntries) > 0 {
+		j := curlew.NewJob()
+		j.Arg = msetEntries
+		j.Fn = func(ctx context.Context, arg interface{}) error {
+			return f.MSet(arg.([]*entry.Entry)...)
+		}
+		f.dispatcher.SubmitAsync(j)
 	}
 	return missEntries, nil
 }
@@ -249,7 +262,7 @@ func (f *Freesia) sub() {
 				}
 				for _, key := range keys {
 					if err := f.cache.Del(key); err != nil {
-						fmt.Printf("async delete key = %s, err = %#v", key, err)
+						fmt.Printf("async delete cache key = %s, err = %#v", key, err)
 					}
 				}
 				return nil
