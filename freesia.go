@@ -107,14 +107,6 @@ func (f *Freesia) Get(e *entry.Entry) error {
 	}
 	b, err := f.store.Get(e.Key).Bytes()
 	switch err {
-	case redis.Nil:
-		j := curlew.NewJob()
-		j.Arg = e
-		j.Fn = func(ctx context.Context, arg interface{}) error {
-			return f.Set(arg.(*entry.Entry))
-		}
-		f.dispatcher.SubmitAsync(j)
-		return err
 	case nil:
 		err = e.Decode(b)
 		if err != nil {
@@ -165,7 +157,6 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		return nil, err
 	}
 
-	msetEntries := make([]*entry.Entry, 0, len(cmders))
 	for _, cmder := range cmders {
 		cmd, ok := cmder.(*redis.StringCmd)
 		if !ok {
@@ -178,7 +169,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		b, err := cmd.Bytes()
 		switch err {
 		case redis.Nil:
-			msetEntries = append(msetEntries, e)
+
 		case nil:
 			err = e.Decode(b)
 			if err != nil {
@@ -195,14 +186,6 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		if !ok {
 			missEntries = append(missEntries, e)
 		}
-	}
-	if len(msetEntries) > 0 {
-		j := curlew.NewJob()
-		j.Arg = msetEntries
-		j.Fn = func(ctx context.Context, arg interface{}) error {
-			return f.MSet(arg.([]*entry.Entry)...)
-		}
-		f.dispatcher.SubmitAsync(j)
 	}
 	return missEntries, nil
 }
