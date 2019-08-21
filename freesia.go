@@ -56,11 +56,11 @@ func (f *Freesia) Set(e *entry.Entry) error {
 	if err := e.Encode(); err != nil {
 		return errors.Wrapf(err, "encode key = %s, value = %+v", e.Key, e.Value)
 	}
-	if err := f.store.Set(e.Key, e.Data(), e.Expiration).Err(); err != nil {
+	if err := f.store.Set(e.Key, e.Data(), e.Exp()).Err(); err != nil {
 		return errors.Wrapf(err, "store set key = %s, value = %+v", e.Key, e.Value)
 	}
 	if e.EnableLocalCache() {
-		if err := f.cache.Set(e.Key, e.Data(), e.Expiration/2); err != nil {
+		if err := f.cache.Set(e.Key, e.Data(), e.LocalExp()); err != nil {
 			return errors.Wrapf(err, "cache set key = %s, value = %+v", e.Key, e.Value)
 		}
 	}
@@ -73,7 +73,7 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 		if err := e.Encode(); err != nil {
 			return errors.Wrapf(err, "encode key = %s, value = %+v", e.Key, e.Value)
 		}
-		pipe.Set(e.Key, e.Data(), e.Expiration)
+		pipe.Set(e.Key, e.Data(), e.Exp())
 	}
 	_, err := pipe.Exec()
 	if err != nil {
@@ -81,7 +81,7 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 	}
 	for _, e := range es {
 		if e.EnableLocalCache() {
-			err := f.cache.Set(e.Key, e.Data(), e.Expiration)
+			err := f.cache.Set(e.Key, e.Data(), e.LocalExp())
 			if err != nil {
 				return errors.Wrapf(err, "cache set key = %s, value = %+v", e.Key, e.Value)
 			}
