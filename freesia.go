@@ -109,7 +109,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 	case nil:
 		err = e.Decode(b)
 		if err != nil {
-			return err
+			return redis.Nil
 		}
 		return nil
 	default:
@@ -172,7 +172,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		case nil:
 			err = e.Decode(b)
 			if err != nil {
-				return nil, err
+				continue
 			}
 			found[e] = struct{}{}
 		default:

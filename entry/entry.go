@@ -36,9 +36,10 @@ func New(key string, value interface{}, expiration time.Duration) (*Entry, error
 		Key:        key,
 		Value:      value,
 		Expiration: expiration,
-		exp:        time.Duration(float64(expiration) * distuv.Uniform{Min: 0.8, Max: 1.2}.Rand()),
 		codec:      codec.MessagePackCodec{},
 	}
+
+	e.randomExp()
 
 	return &e, nil
 }
@@ -81,6 +82,10 @@ func (e *Entry) Exp() time.Duration {
 
 func (e *Entry) LocalExp() time.Duration {
 	return e.exp / 2
+}
+
+func (e *Entry) randomExp() {
+	e.exp = time.Duration(float64(e.Expiration) * distuv.Uniform{Min: 0.8, Max: 1.2}.Rand())
 }
 
 func KS(es ...*Entry) map[string]interface{} {
