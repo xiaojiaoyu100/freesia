@@ -32,12 +32,15 @@ func New(key string, value interface{}, expiration time.Duration) (*Entry, error
 		return nil, errors.New("expiration must be greater than 0")
 	}
 
-	return &Entry{
+	e := Entry{
 		Key:        key,
 		Value:      value,
 		Expiration: expiration,
+		exp:        time.Duration(float64(expiration) * distuv.Uniform{Min: 0.8, Max: 1.2}.Rand()),
 		codec:      codec.MessagePackCodec{},
-	}, nil
+	}
+
+	return &e, nil
 }
 
 func (e *Entry) EnableLocalCache() bool {
@@ -73,19 +76,11 @@ func (e *Entry) Data() []byte {
 }
 
 func (e *Entry) Exp() time.Duration {
-	e.lazyExp()
 	return e.exp
 }
 
 func (e *Entry) LocalExp() time.Duration {
-	e.lazyExp()
 	return e.exp / 2
-}
-
-func (e *Entry) lazyExp() {
-	if e.exp.String() == zeroExpiration {
-		e.exp = time.Duration(float64(e.Expiration) * distuv.Uniform{Min: 0.8, Max: 1.2}.Rand())
-	}
 }
 
 func KS(es ...*Entry) map[string]interface{} {

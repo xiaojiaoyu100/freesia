@@ -7,7 +7,6 @@ import (
 	"github.com/xiaojiaoyu100/lizard/mass"
 
 	"github.com/go-redis/redis"
-	"github.com/pkg/errors"
 	"github.com/vmihailenco/msgpack"
 	"github.com/xiaojiaoyu100/curlew"
 	"github.com/xiaojiaoyu100/freesia/entry"
@@ -54,14 +53,14 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 
 func (f *Freesia) Set(e *entry.Entry) error {
 	if err := e.Encode(); err != nil {
-		return errors.Wrapf(err, "encode key = %s, value = %+v", e.Key, e.Value)
+		return err
 	}
 	if err := f.store.Set(e.Key, e.Data(), e.Exp()).Err(); err != nil {
-		return errors.Wrapf(err, "store set key = %s, value = %+v", e.Key, e.Value)
+		return err
 	}
 	if e.EnableLocalCache() {
 		if err := f.cache.Set(e.Key, e.Data(), e.LocalExp()); err != nil {
-			return errors.Wrapf(err, "cache set key = %s, value = %+v", e.Key, e.Value)
+			return err
 		}
 	}
 	return nil
@@ -71,19 +70,19 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 	pipe := f.store.Pipeline()
 	for _, e := range es {
 		if err := e.Encode(); err != nil {
-			return errors.Wrapf(err, "encode key = %s, value = %+v", e.Key, e.Value)
+			return err
 		}
 		pipe.Set(e.Key, e.Data(), e.Exp())
 	}
 	_, err := pipe.Exec()
 	if err != nil {
-		return errors.Wrapf(err, "pipeline exec")
+		return err
 	}
 	for _, e := range es {
 		if e.EnableLocalCache() {
 			err := f.cache.Set(e.Key, e.Data(), e.LocalExp())
 			if err != nil {
-				return errors.Wrapf(err, "cache set key = %s, value = %+v", e.Key, e.Value)
+				return err
 			}
 		}
 	}
@@ -98,7 +97,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 		case nil:
 			b, ok := data.([]byte)
 			if err = e.Decode(b); ok && err != nil {
-				return errors.Wrapf(err, "decode key = %s, data = %s", e.Key, b)
+				return err
 			}
 			return nil
 		default:
@@ -110,11 +109,11 @@ func (f *Freesia) Get(e *entry.Entry) error {
 	case nil:
 		err = e.Decode(b)
 		if err != nil {
-			return errors.Wrapf(err, "decode key = %s, data = %s", e.Key, b)
+			return err
 		}
 		return nil
 	default:
-		return errors.Wrapf(err, "store get key = %s", e.Key)
+		return err
 	}
 }
 
@@ -210,11 +209,11 @@ func (f *Freesia) Del(keys ...string) error {
 	}
 	_, err := f.store.Del(keys...).Result()
 	if err != nil {
-		return errors.Wrapf(err, "store del, keys = %+v", keys)
+		return err
 	}
 	for _, key := range keys {
 		if err := f.cache.Del(key); err != nil {
-			return errors.Wrapf(err, "delete cache: key = %s", key)
+			return err
 		}
 	}
 	return nil
