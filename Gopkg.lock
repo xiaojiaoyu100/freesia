@@ -22,10 +22,16 @@
   version = "v1.3.2"
 
 [[projects]]
-  name = "github.com/pkg/errors"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
-  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
-  version = "v0.8.1"
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
 
 [[projects]]
   name = "github.com/vmihailenco/msgpack"
@@ -49,8 +55,8 @@
 [[projects]]
   name = "github.com/xiaojiaoyu100/curlew"
   packages = ["."]
-  revision = "3e0da50a027b0e6ad1fbf8028b6b2aac1237c6c4"
-  version = "v0.1.0"
+  revision = "b9ac0f9fcfabb049db3adab6cf7b68e40b243252"
+  version = "v0.2.1"
 
 [[projects]]
   name = "github.com/xiaojiaoyu100/lizard"
@@ -61,14 +67,55 @@
 [[projects]]
   name = "github.com/xiaojiaoyu100/roc"
   packages = ["."]
-  revision = "6384f119cda28142f2fb2b59c30df071388fcee5"
-  version = "v0.0.1"
+  revision = "1212edf970997448d9d61a9a9ac85d5f7b65046b"
+  version = "v0.1.1"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/exp"
+  packages = ["rand"]
+  revision = "81c71964d733d2e3e2375a315c0e2fd4d162adc4"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
   revision = "74dc4d7220e7acc4e100824340f3e66577424772"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "98129a5cf4a0207f7e2202f458737deeaca0514a"
+
+[[projects]]
+  branch = "master"
+  name = "gonum.org/v1/gonum"
+  packages = [
+    "blas",
+    "blas/blas64",
+    "blas/cblas128",
+    "blas/gonum",
+    "floats",
+    "internal/asm/c128",
+    "internal/asm/c64",
+    "internal/asm/f32",
+    "internal/asm/f64",
+    "internal/cmplx64",
+    "internal/math32",
+    "lapack",
+    "lapack/gonum",
+    "lapack/lapack64",
+    "mat",
+    "mathext",
+    "mathext/internal/amos",
+    "mathext/internal/cephes",
+    "mathext/internal/gonum",
+    "stat",
+    "stat/combin",
+    "stat/distuv"
+  ]
+  revision = "40fa6a493b3df38b974481987358c70e5a1a144d"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -91,6 +138,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "24d3270a7a15bb4959917bc957a57eb7f533f214bce14b51eadab90d6818f8da"
+  inputs-digest = "47b548333fc18b1e760f0cf02864e397bd1c50ccca0b078ee92e726e620a6dbf"
   solver-name = "gps-cdcl"
   solver-version = 1

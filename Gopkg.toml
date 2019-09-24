@@ -35,19 +35,15 @@
 
 [[constraint]]
   name = "github.com/xiaojiaoyu100/curlew"
-  version = "v0.1.0"
+  version = "0.2.1"
 
 [[constraint]]
   name = "github.com/xiaojiaoyu100/roc"
-  version = "v0.1.0"
+  version = "0.1.1"
 
 [[constraint]]
   name = "github.com/xiaojiaoyu100/lizard"
   version = "v0.0.1"
-
-[[constraint]]
-  name = "github.com/pkg/errors"
-  version = "v0.8.1"
 
 [prune]
   unused-packages = true

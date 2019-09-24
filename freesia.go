@@ -249,7 +249,7 @@ func (f *Freesia) sub() {
 				}
 				return nil
 			}
-			f.dispatcher.SubmitAsync(job)
+			f.dispatcher.Submit(job)
 		}
 	}()
 
