@@ -3,10 +3,12 @@ package freesia
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/xiaojiaoyu100/lizard/mass"
 
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
 	"github.com/xiaojiaoyu100/curlew"
 	"github.com/xiaojiaoyu100/freesia/entry"
@@ -17,7 +19,8 @@ type Freesia struct {
 	store      Store
 	cache      *roc.Cache
 	dispatcher *curlew.Dispatcher
-	pubsub     *redis.PubSub
+	pubSub     *redis.PubSub
+	logger     *logrus.Logger
 }
 
 func New(store Store, setters ...Setter) (*Freesia, error) {
@@ -44,9 +47,17 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 		return nil, err
 	}
 
-	f.pubsub = f.store.Subscribe(channel)
+	f.pubSub = f.store.Subscribe(channel)
 
 	f.sub()
+
+	logger := logrus.New()
+	logger.SetLevel(logrus.InfoLevel)
+	logger.SetOutput(os.Stdout)
+	logger.SetFormatter(&logrus.JSONFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+	f.logger = logger
 
 	return f, nil
 }
@@ -233,7 +244,7 @@ func (f *Freesia) Pub(keys ...string) error {
 
 func (f *Freesia) sub() {
 	go func() {
-		for message := range f.pubsub.Channel() {
+		for message := range f.pubSub.Channel() {
 			job := curlew.NewJob()
 			job.Arg = message
 			job.Fn = func(ctx context.Context, arg interface{}) error {
