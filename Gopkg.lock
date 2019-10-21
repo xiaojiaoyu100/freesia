@@ -61,8 +61,8 @@
 [[projects]]
   name = "github.com/xiaojiaoyu100/lizard"
   packages = ["mass"]
-  revision = "a213a5010f622257d7542168bf262d842e8492b9"
-  version = "v0.0.1"
+  revision = "4b2a016ac44aa5e52b9821d7871b2fde3ac7cef5"
+  version = "v0.0.2"
 
 [[projects]]
   name = "github.com/xiaojiaoyu100/roc"
@@ -138,6 +138,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "47b548333fc18b1e760f0cf02864e397bd1c50ccca0b078ee92e726e620a6dbf"
+  inputs-digest = "739bd1fdaa2a2df54263e5e95d23c07c71b1dbf2d46d0b6b4f71cea858ad0e27"
   solver-name = "gps-cdcl"
   solver-version = 1
