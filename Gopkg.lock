@@ -12,8 +12,8 @@
     "internal/proto",
     "internal/util"
   ]
-  revision = "c5c4ad6a4cae24f3867af1a0513709fc944a87f3"
-  version = "v6.15.4"
+  revision = "7f69d5e32072d151eb6936cbe2306413e8117488"
+  version = "v6.15.6"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -61,8 +61,8 @@
 [[projects]]
   name = "github.com/xiaojiaoyu100/lizard"
   packages = ["mass"]
-  revision = "4b2a016ac44aa5e52b9821d7871b2fde3ac7cef5"
-  version = "v0.0.2"
+  revision = "ed31517ebd0b1b59342c6d4f8f7e05dd7446c354"
+  version = "v0.03"
 
 [[projects]]
   name = "github.com/xiaojiaoyu100/roc"
@@ -74,22 +74,21 @@
   branch = "master"
   name = "golang.org/x/exp"
   packages = ["rand"]
-  revision = "81c71964d733d2e3e2375a315c0e2fd4d162adc4"
+  revision = "69215a2ee97e88b0d79235b7aae60dc2bfa3d034"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "74dc4d7220e7acc4e100824340f3e66577424772"
+  revision = "ec77196f6094c3492a8b61f2c11cf937f78992ae"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "98129a5cf4a0207f7e2202f458737deeaca0514a"
+  revision = "742c48ecaeb7c624c475e02f3eb0827ebb4970d4"
 
 [[projects]]
-  branch = "master"
   name = "gonum.org/v1/gonum"
   packages = [
     "blas",
@@ -115,7 +114,8 @@
     "stat/combin",
     "stat/distuv"
   ]
-  revision = "40fa6a493b3df38b974481987358c70e5a1a144d"
+  revision = "b72f7aa23a47a7d95df7d3d5248af26c33327925"
+  version = "v0.6.0"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -132,12 +132,12 @@
     "internal/modules",
     "internal/remote_api"
   ]
-  revision = "b2f4a3cf3c67576a2ee09e1fe62656a5086ce880"
-  version = "v1.6.1"
+  revision = "971852bfffca25b069c31162ae8f247a3dba083b"
+  version = "v1.6.5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "739bd1fdaa2a2df54263e5e95d23c07c71b1dbf2d46d0b6b4f71cea858ad0e27"
+  inputs-digest = "37a9538bdadc7e4c3598d0b3d949a63b1f57d1b8c5aea6327469684d9f699211"
   solver-name = "gps-cdcl"
   solver-version = 1
