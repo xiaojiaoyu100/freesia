@@ -145,20 +145,21 @@ func (f *Freesia) GetWithTTL(e *entry.Entry) error {
 		}
 	}
 	pipe := f.store.Pipeline()
-	pipe.Get(e.Key())
 	pipe.TTL(e.Key())
-	cmders, _ := pipe.Exec()
-	b, err := cmders[0].(*redis.StringCmd).Bytes()
+	pipe.Get(e.Key())
+	cmds, _ := pipe.Exec()
+	ttl, _ := cmds[0].(*redis.DurationCmd).Result()
+	e.SetTTL(ttl.Seconds())
+	b, err := cmds[1].(*redis.StringCmd).Bytes()
 	switch err {
 	case nil:
 		err = e.Decode(b)
 		if err != nil {
 			return redis.Nil
 		}
+	default:
+		return err
 	}
-	ttl, _ := cmders[1].(*redis.DurationCmd).Result()
-	e.SetTTL(ttl.Seconds())
-	return nil
 }
 
 func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
