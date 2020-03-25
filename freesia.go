@@ -66,11 +66,11 @@ func (f *Freesia) Set(e *entry.Entry) error {
 	if err := e.Encode(); err != nil {
 		return err
 	}
-	if err := f.store.Set(e.Key, e.Data(), e.Exp()).Err(); err != nil {
+	if err := f.store.Set(e.Key(), e.Data(), e.Exp()).Err(); err != nil {
 		return err
 	}
-	if e.EnableLocalCache() {
-		if err := f.cache.Set(e.Key, e.Data(), e.LocalExp()); err != nil {
+	if e.EnableLocalExp() {
+		if err := f.cache.Set(e.Key(), e.Data(), e.LocalExp()); err != nil {
 			return err
 		}
 	}
@@ -83,15 +83,15 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 		if err := e.Encode(); err != nil {
 			return err
 		}
-		pipe.Set(e.Key, e.Data(), e.Exp())
+		pipe.Set(e.Key(), e.Data(), e.Exp())
 	}
 	_, err := pipe.Exec()
 	if err != nil {
 		return err
 	}
 	for _, e := range es {
-		if e.EnableLocalCache() {
-			err := f.cache.Set(e.Key, e.Data(), e.LocalExp())
+		if e.EnableLocalExp() {
+			err := f.cache.Set(e.Key(), e.Data(), e.LocalExp())
 			if err != nil {
 				return err
 			}
@@ -100,9 +100,10 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 	return nil
 }
 
+// Get returns the cache.
 func (f *Freesia) Get(e *entry.Entry) error {
-	if e.EnableLocalCache() {
-		data, err := f.cache.Get(e.Key)
+	if e.EnableLocalExp() {
+		data, err := f.cache.Get(e.Key())
 		switch err {
 		case roc.ErrMiss:
 		case nil:
@@ -115,7 +116,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 			return err
 		}
 	}
-	b, err := f.store.Get(e.Key).Bytes()
+	b, err := f.store.Get(e.Key()).Bytes()
 	switch err {
 	case nil:
 		err = e.Decode(b)
@@ -128,16 +129,48 @@ func (f *Freesia) Get(e *entry.Entry) error {
 	}
 }
 
+func (f *Freesia) GetWithTTL(e *entry.Entry) error {
+	if e.EnableLocalExp() {
+		data, err := f.cache.Get(e.Key())
+		switch err {
+		case roc.ErrMiss:
+		case nil:
+			b, ok := data.([]byte)
+			if err = e.Decode(b); ok && err != nil {
+				return err
+			}
+			return nil
+		default:
+			return err
+		}
+	}
+	pipe := f.store.Pipeline()
+	pipe.Get(e.Key())
+	pipe.TTL(e.Key())
+	cmders, _ := pipe.Exec()
+	b, err := cmders[0].(*redis.StringCmd).Bytes()
+	switch err {
+	case nil:
+		err = e.Decode(b)
+		if err != nil {
+			return redis.Nil
+		}
+	}
+	ttl, _ := cmders[1].(*redis.DurationCmd).Result()
+	e.SetTTL(ttl.Seconds())
+	return nil
+}
+
 func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	pipe := f.store.Pipeline()
 	found := make(map[*entry.Entry]struct{})
 	ret := make(map[*redis.StringCmd]*entry.Entry)
 	for _, e := range es {
-		if e.EnableLocalCache() {
-			b, err := f.cache.Get(e.Key)
+		if e.EnableLocalExp() {
+			b, err := f.cache.Get(e.Key())
 			switch err {
 			case roc.ErrMiss:
-				cmd := pipe.Get(e.Key)
+				cmd := pipe.Get(e.Key())
 				ret[cmd] = e
 			case nil:
 				if data, ok := b.([]byte); ok {
@@ -152,7 +185,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 
 			}
 		} else {
-			cmd := pipe.Get(e.Key)
+			cmd := pipe.Get(e.Key())
 			ret[cmd] = e
 		}
 	}

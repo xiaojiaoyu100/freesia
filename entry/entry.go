@@ -2,70 +2,67 @@ package entry
 
 import (
 	"errors"
-	"time"
-
-	"gonum.org/v1/gonum/stat/distuv"
-
+	"fmt"
 	"github.com/xiaojiaoyu100/freesia/codec"
-)
-
-const (
-	zeroExpiration = "0s"
+	"reflect"
+	"time"
 )
 
 type Entry struct {
-	Key              string
-	Value            interface{}
-	Expiration       time.Duration
+	key              string
+	value            interface{}
 	exp              time.Duration
+	localExp         time.Duration
 	data             []byte
+	ttl              float64
 	codec            codec.Codec
 	enableLocalCache bool
 }
 
-func New(key string, value interface{}, expiration time.Duration) (*Entry, error) {
-	if key == "" {
+func New(setting ...Setting) (*Entry, error) {
+	e := &Entry{
+		codec: codec.MessagePackCodec{},
+	}
+	for _, o := range setting {
+		err := o(e)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if e.key == "" {
 		return nil, errors.New("key length must greater than zero")
 	}
 
-	if expiration.String() == zeroExpiration {
-		return nil, errors.New("expiration must be greater than 0")
-	}
-
-	e := Entry{
-		Key:        key,
-		Value:      value,
-		Expiration: expiration,
-		codec:      codec.MessagePackCodec{},
-	}
-
-	e.randomExp()
-
-	return &e, nil
+	return e, nil
 }
 
-func (e *Entry) EnableLocalCache() bool {
-	return e.enableLocalCache
-}
-
-func (e *Entry) SetEnableLocalCache(b bool) {
-	e.enableLocalCache = b
+// Key returns the key.
+func (e *Entry) Key() string {
+	return e.key
 }
 
 func (e *Entry) Encode() error {
-	if e.data != nil {
+	if err := checkSet(e); err != nil {
+		return err
+	}
+	b, ok := e.value.([]byte)
+	if ok {
+		e.data = b
 		return nil
 	}
-	b, err := e.codec.Encode(e.Value)
+	b, err := e.codec.Encode(e.value)
 	if err != nil {
-		return err
+		return fmt.Errorf("key = %s, encode err: %w", e.key, err)
 	}
 	e.data = b
 	return nil
 }
 
 func (e *Entry) Decode(data []byte) error {
-	if err := e.codec.Decode(data, e.Value); err != nil {
+	if err := checkGet(e); err != nil {
+		return err
+	}
+	if err := e.codec.Decode(data, &e.value); err != nil {
 		return err
 	}
 	e.data = data
@@ -76,22 +73,56 @@ func (e *Entry) Data() []byte {
 	return e.data
 }
 
+func (e *Entry) Value() interface{} {
+	return e.value
+}
+
+// EnableLocalExp enables the local expiration.
+func (e *Entry) EnableLocalExp() bool {
+	return e.enableLocalCache
+}
+
+func (e *Entry) LocalExp() time.Duration {
+	return e.localExp
+}
+
 func (e *Entry) Exp() time.Duration {
 	return e.exp
 }
 
-func (e *Entry) LocalExp() time.Duration {
-	return e.exp / 2
+func (e *Entry) TTL() float64 {
+	return e.ttl
 }
 
-func (e *Entry) randomExp() {
-	e.exp = time.Duration(float64(e.Expiration) * distuv.Uniform{Min: 0.8, Max: 1.2}.Rand())
+func (e *Entry) SetTTL(ttl float64) {
+	e.ttl = ttl
+}
+
+// CheckSet checks set conditions.
+func checkSet(e *Entry) error {
+	if int64(e.exp) == 0 {
+		return errors.New("exp must be greater than zero")
+	}
+	if e.enableLocalCache && int64(e.localExp) == 0 {
+		return errors.New("local exp must be greater than zero when enabling local cache")
+	}
+	return nil
+}
+
+func checkGet(e *Entry) error {
+	if reflect.TypeOf(e.value).Kind() != reflect.Ptr {
+		return fmt.Errorf("%s: need pointer", e.key)
+	}
+	if reflect.ValueOf(e.value).IsNil() {
+		return fmt.Errorf("%s: need pointer to a actual struct", e.key)
+	}
+	return nil
 }
 
 func KS(es ...*Entry) map[string]interface{} {
 	ret := make(map[string]interface{})
 	for _, e := range es {
-		ret[e.Key] = e.Value
+		ret[e.key] = e.value
 	}
 	return ret
 }
