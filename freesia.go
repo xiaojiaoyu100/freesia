@@ -259,15 +259,13 @@ func (f *Freesia) Del(keys ...string) error {
 	if err != nil {
 		return err
 	}
-	for _, key := range keys {
-		if err := f.cache.Del(key); err != nil {
-			return err
-		}
+	if err := f.pub(keys...); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (f *Freesia) Pub(keys ...string) error {
+func (f *Freesia) pub(keys ...string) error {
 	b, err := msgpack.Marshal(keys)
 	if err != nil {
 		return err
