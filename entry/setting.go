@@ -31,6 +31,14 @@ func WithLocalExpiration(d time.Duration) Setting {
 	}
 }
 
+// EnableLocalCache enables local cache.
+func EnableLocalCache() Setting {
+	return func(e *Entry) error {
+		e.enableLocalCache = true
+		return nil
+	}
+}
+
 // WithValue sets the corresponding value.
 func WithValue(value interface{}) Setting {
 	return func(e *Entry) error {

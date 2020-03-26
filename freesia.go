@@ -111,6 +111,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 			if err = e.Decode(b); ok && err != nil {
 				return err
 			}
+			e.SetSource(entry.SourceLocal)
 			return nil
 		default:
 			return err
@@ -123,6 +124,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 		if err != nil {
 			return redis.Nil
 		}
+		e.SetSource(entry.SourceCenter)
 		return nil
 	default:
 		return err
@@ -160,6 +162,7 @@ func (f *Freesia) GetWithTTL(e *entry.Entry) error {
 	default:
 		return err
 	}
+	return nil
 }
 
 func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {

@@ -15,6 +15,7 @@ type Entry struct {
 	localExp         time.Duration
 	data             []byte
 	ttl              float64
+	loadFrom int
 	codec            codec.Codec
 	enableLocalCache bool
 }
@@ -96,6 +97,18 @@ func (e *Entry) TTL() float64 {
 
 func (e *Entry) SetTTL(ttl float64) {
 	e.ttl = ttl
+}
+
+func (e *Entry) SourceLocal() bool {
+	return e.loadFrom == SourceLocal
+}
+
+func (e *Entry) SetSource(s int) {
+	e.loadFrom = s
+}
+
+func (e *Entry) SourceCenter() bool {
+	return e.loadFrom == SourceCenter
 }
 
 // CheckSet checks set conditions.
