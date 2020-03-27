@@ -2,7 +2,6 @@ package freesia
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/xiaojiaoyu100/lizard/mass"
@@ -289,8 +288,9 @@ func (f *Freesia) sub() {
 					return err
 				}
 				for _, key := range keys {
+					f.logger.Printf("delete key: %s", key)
 					if err := f.cache.Del(key); err != nil {
-						fmt.Printf("async delete cache key = %s, err = %#v", key, err)
+						f.logger.Errorf("async delete cache key = %s, err = %#v", key, err)
 					}
 				}
 				return nil
