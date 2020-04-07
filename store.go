@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
+// Store represents redis op.
 type Store interface {
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	MSet(pairs ...interface{}) *redis.StatusCmd

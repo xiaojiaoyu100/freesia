@@ -1,7 +1,7 @@
 package entry
 
 const (
-	_  int  = iota
+	_ int = iota
 	SourceLocal
 	SourceCenter
 )

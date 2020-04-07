@@ -15,7 +15,7 @@ type Entry struct {
 	localExp         time.Duration
 	data             []byte
 	ttl              float64
-	loadFrom int
+	loadFrom         int
 	codec            codec.Codec
 	enableLocalCache bool
 }

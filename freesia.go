@@ -2,18 +2,17 @@ package freesia
 
 import (
 	"context"
-	"os"
-
-	"github.com/xiaojiaoyu100/lizard/mass"
-
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
 	"github.com/xiaojiaoyu100/curlew"
 	"github.com/xiaojiaoyu100/freesia/entry"
+	"github.com/xiaojiaoyu100/lizard/mass"
 	"github.com/xiaojiaoyu100/roc"
+	"os"
 )
 
+// Freesia 多级缓存
 type Freesia struct {
 	store      Store
 	cache      *roc.Cache
@@ -22,6 +21,7 @@ type Freesia struct {
 	logger     *logrus.Logger
 }
 
+// New 生成一个实例
 func New(store Store, setters ...Setter) (*Freesia, error) {
 	var err error
 
@@ -61,6 +61,7 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 	return f, nil
 }
 
+// Set sets a key-value.
 func (f *Freesia) Set(e *entry.Entry) error {
 	if err := e.Encode(); err != nil {
 		return err
@@ -76,6 +77,7 @@ func (f *Freesia) Set(e *entry.Entry) error {
 	return nil
 }
 
+// MSet batch sets entries.
 func (f *Freesia) MSet(es ...*entry.Entry) error {
 	pipe := f.store.Pipeline()
 	for _, e := range es {
@@ -130,6 +132,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 	}
 }
 
+// GetWithTTL gets value with ttl.
 func (f *Freesia) GetWithTTL(e *entry.Entry) error {
 	if e.EnableLocalExp() {
 		data, err := f.cache.Get(e.Key())
@@ -236,6 +239,7 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	return missEntries, nil
 }
 
+// MGet batch get entries.
 func (f *Freesia) MGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	batch := mass.New(len(es), 3000)
 	missEntries := make([]*entry.Entry, 0, len(es))
@@ -250,6 +254,7 @@ func (f *Freesia) MGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	return missEntries, nil
 }
 
+// Del deletes keys.
 func (f *Freesia) Del(keys ...string) error {
 	if len(keys) == 0 {
 		return nil
