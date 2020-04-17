@@ -27,12 +27,6 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 
 	f := new(Freesia)
 	f.store = store
-	for _, setter := range setters {
-		err = setter(f)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	cache, err := roc.New()
 	if err != nil {
@@ -57,6 +51,13 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
 	f.logger = logger
+
+	for _, setter := range setters {
+		err = setter(f)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return f, nil
 }
