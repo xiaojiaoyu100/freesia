@@ -3,11 +3,13 @@ package entry
 import (
 	"errors"
 	"fmt"
-	"github.com/xiaojiaoyu100/freesia/codec"
 	"reflect"
 	"time"
+
+	"github.com/xiaojiaoyu100/freesia/codec"
 )
 
+// Entry a cache entry.
 type Entry struct {
 	key              string
 	value            interface{}
@@ -20,6 +22,7 @@ type Entry struct {
 	enableLocalCache bool
 }
 
+// New generates an entry.
 func New(setting ...Setting) (*Entry, error) {
 	e := &Entry{
 		codec: codec.MessagePackCodec{},
@@ -42,6 +45,7 @@ func (e *Entry) Key() string {
 	return e.key
 }
 
+// Encode encodes an entry.
 func (e *Entry) Encode() error {
 	if err := checkSet(e); err != nil {
 		return err
@@ -59,6 +63,7 @@ func (e *Entry) Encode() error {
 	return nil
 }
 
+// Decode decodes an entry.
 func (e *Entry) Decode(data []byte) error {
 	if err := checkGet(e); err != nil {
 		return err
@@ -70,43 +75,52 @@ func (e *Entry) Decode(data []byte) error {
 	return nil
 }
 
+// Data entry data.
 func (e *Entry) Data() []byte {
 	return e.data
 }
 
+// Value entry value.
 func (e *Entry) Value() interface{} {
 	return e.value
 }
 
-// EnableLocalExp enables the local expiration.
-func (e *Entry) EnableLocalExp() bool {
+// EnableLocalCache enables the local expiration.
+func (e *Entry) EnableLocalCache() bool {
 	return e.enableLocalCache
 }
 
+// LocalExp local expiration.
 func (e *Entry) LocalExp() time.Duration {
 	return e.localExp
 }
 
+// Exp expiration.
 func (e *Entry) Exp() time.Duration {
 	return e.exp
 }
 
+// TTL time to live.
 func (e *Entry) TTL() float64 {
 	return e.ttl
 }
 
+// SetTTL sets ttl for an entry.
 func (e *Entry) SetTTL(ttl float64) {
 	e.ttl = ttl
 }
 
+// SourceLocal reports cache from local.
 func (e *Entry) SourceLocal() bool {
 	return e.loadFrom == SourceLocal
 }
 
+// SetSource sets source.
 func (e *Entry) SetSource(s int) {
 	e.loadFrom = s
 }
 
+// SourceCenter reports cache from center.
 func (e *Entry) SourceCenter() bool {
 	return e.loadFrom == SourceCenter
 }
@@ -132,6 +146,7 @@ func checkGet(e *Entry) error {
 	return nil
 }
 
+// KS key value map.
 func KS(es ...*Entry) map[string]interface{} {
 	ret := make(map[string]interface{})
 	for _, e := range es {

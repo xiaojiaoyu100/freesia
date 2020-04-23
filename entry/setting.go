@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Setting configures an entry.
 type Setting func(e *Entry) error
 
 // WithKey sets the key.
