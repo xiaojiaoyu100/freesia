@@ -38,8 +38,8 @@ github.com/xiaojiaoyu100/curlew v0.2.1 h1:6fj7fIepQMvjna/SW720ImW8jX+47+nF3F7Dic
 github.com/xiaojiaoyu100/curlew v0.2.1/go.mod h1:T1E4wpTXciXHO0YJPhHz8sQB/MGPLt+M7efYFKK36Hg=
 github.com/xiaojiaoyu100/lizard v0.0.3 h1:5EqWq8xY0nsaztvcN3JkoZcgFIOBY885TOTtW3r7Mhk=
 github.com/xiaojiaoyu100/lizard v0.0.3/go.mod h1:0TapF4uwSGj4UOUKL29ronqWeHl6CrW9LNhlR9LvDVw=
-github.com/xiaojiaoyu100/roc v0.2.0 h1:3bBnpSEF3UYct6dBwpHG0jjs86gWvwF1sumSo9SqYQQ=
-github.com/xiaojiaoyu100/roc v0.2.0/go.mod h1:AG9Qu/UMivM9TvbUB9vAhG1HwQTHf/86gGWD4Lj0P90=
+github.com/xiaojiaoyu100/roc v0.2.1 h1:TXP7aK19dlk/3Jh29UxQp2HjYs+s7pLDkj6jR+KIjlk=
+github.com/xiaojiaoyu100/roc v0.2.1/go.mod h1:AG9Qu/UMivM9TvbUB9vAhG1HwQTHf/86gGWD4Lj0P90=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180906233101-161cd47e91fd/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
