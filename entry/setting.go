@@ -4,6 +4,15 @@ import (
 	"time"
 )
 
+const (
+	defaultLocalExpiration = 5 * time.Second
+)
+
+// DefaultLocalExpiration returns the default of local expiration.
+func DefaultLocalExpiration() time.Duration {
+	return defaultLocalExpiration
+}
+
 // Setting configures an entry.
 type Setting func(e *Entry) error
 
@@ -23,19 +32,11 @@ func WithExpiration(d time.Duration) Setting {
 	}
 }
 
-// WithLocalExpiration sets the local expiration for the key.
-func WithLocalExpiration(d time.Duration) Setting {
-	return func(e *Entry) error {
-		e.enableLocalCache = true
-		e.localExp = d
-		return nil
-	}
-}
-
 // EnableLocalCache enables local cache.
 func EnableLocalCache() Setting {
 	return func(e *Entry) error {
 		e.enableLocalCache = true
+		e.localExp = defaultLocalExpiration
 		return nil
 	}
 }

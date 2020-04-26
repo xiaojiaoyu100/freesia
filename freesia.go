@@ -3,7 +3,6 @@ package freesia
 import (
 	"context"
 	"os"
-	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
@@ -136,8 +135,8 @@ func (f *Freesia) Get(e *entry.Entry) error {
 				return redis.Nil
 			}
 			e.SetSource(entry.SourceCenter)
-			if e.EnableLocalCache() && e.TTL() > 3 {
-				_ = f.cache.Set(e.Key(), e.Data(), 3*time.Second)
+			if e.EnableLocalCache() && e.TTL() > entry.DefaultLocalExpiration().Seconds() {
+				_ = f.cache.Set(e.Key(), e.Data(), entry.DefaultLocalExpiration())
 			}
 		}
 	default:
