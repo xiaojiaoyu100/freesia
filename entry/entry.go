@@ -100,7 +100,7 @@ func (e *Entry) Exp() time.Duration {
 	return e.exp
 }
 
-// TTL time to live.
+// TTL 只会返回redis的存活时间，与SourceCenter一起使用。
 func (e *Entry) TTL() float64 {
 	return e.ttl
 }

@@ -2,6 +2,7 @@ package freesia
 
 import (
 	"context"
+	"errors"
 	"os"
 
 	"github.com/go-redis/redis"
@@ -103,7 +104,7 @@ func (f *Freesia) MSet(es ...*entry.Entry) error {
 	return nil
 }
 
-// Get gets value with ttl.
+// Get gets value.
 func (f *Freesia) Get(e *entry.Entry) error {
 	if e.EnableLocalCache() {
 		data, err := f.cache.Get(e.Key())
@@ -121,12 +122,14 @@ func (f *Freesia) Get(e *entry.Entry) error {
 		}
 	}
 	pipe := f.store.Pipeline()
-	pipe.TTL(e.Key())
-	pipe.Get(e.Key())
-	cmds, _ := pipe.Exec()
-	ttl, _ := cmds[0].(*redis.DurationCmd).Result()
-	e.SetTTL(ttl.Seconds())
-	b, err := cmds[1].(*redis.StringCmd).Bytes()
+	ttlCmd := pipe.TTL(e.Key())
+	getCmd := pipe.Get(e.Key())
+	_, err := pipe.Exec()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return err
+	}
+
+	b, err := getCmd.Bytes()
 	switch err {
 	case nil:
 		{
@@ -134,6 +137,8 @@ func (f *Freesia) Get(e *entry.Entry) error {
 			if err != nil {
 				return redis.Nil
 			}
+			ttl, _ := ttlCmd.Result()
+			e.SetTTL(ttl.Seconds())
 			e.SetSource(entry.SourceCenter)
 			if e.EnableLocalCache() && e.TTL() > entry.DefaultLocalExpiration().Seconds() {
 				_ = f.cache.Set(e.Key(), e.Data(), entry.DefaultLocalExpiration())
@@ -148,29 +153,41 @@ func (f *Freesia) Get(e *entry.Entry) error {
 func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 	pipe := f.store.Pipeline()
 	found := make(map[*entry.Entry]struct{})
-	ret := make(map[*redis.StringCmd]*entry.Entry)
+
+	type EntryCmd struct {
+		*redis.StringCmd
+		*redis.DurationCmd
+	}
+
+	ret := make(map[*entry.Entry]*EntryCmd)
 	for _, e := range es {
 		if e.EnableLocalCache() {
 			b, err := f.cache.Get(e.Key())
-			switch err {
-			case roc.ErrMiss:
-				cmd := pipe.Get(e.Key())
-				ret[cmd] = e
-			case nil:
-				if data, ok := b.([]byte); ok {
-					err = e.Decode(data)
-					if err != nil {
-						return nil, err
-					}
-					found[e] = struct{}{}
+			switch {
+			case errors.Is(err, roc.ErrMiss):
+				ttlCmd := pipe.TTL(e.Key())
+				getCmd := pipe.Get(e.Key())
+				ret[e] = &EntryCmd{
+					getCmd,
+					ttlCmd,
 				}
+			case err == nil:
+				data, ok := b.([]byte)
+				if err = e.Decode(data); ok && err != nil {
+					return nil, err
+				}
+				e.SetSource(entry.SourceLocal)
+				found[e] = struct{}{}
 			default:
 				return nil, err
-
 			}
 		} else {
-			cmd := pipe.Get(e.Key())
-			ret[cmd] = e
+			ttlCmd := pipe.TTL(e.Key())
+			getCmd := pipe.Get(e.Key())
+			ret[e] = &EntryCmd{
+				getCmd,
+				ttlCmd,
+			}
 		}
 	}
 
@@ -179,34 +196,36 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		return []*entry.Entry{}, nil
 	}
 
-	cmders, err := pipe.Exec()
-	if err != nil && err != redis.Nil {
+	_, err := pipe.Exec()
+	if err != nil && !errors.Is(err, redis.Nil) {
 		return nil, err
 	}
 
-	for _, cmder := range cmders {
-		cmd, ok := cmder.(*redis.StringCmd)
+	for _, e := range es {
+		entryCmd, ok := ret[e]
 		if !ok {
 			continue
 		}
-		e, ok := ret[cmd]
-		if !ok {
-			continue
-		}
-		b, err := cmd.Bytes()
-		switch err {
-		case redis.Nil:
-
-		case nil:
+		b, err := entryCmd.StringCmd.Bytes()
+		switch {
+		case errors.Is(err, redis.Nil):
+		case err == nil:
 			err = e.Decode(b)
 			if err != nil {
 				continue
+			}
+			ttl, _ := entryCmd.DurationCmd.Result()
+			e.SetTTL(ttl.Seconds())
+			e.SetSource(entry.SourceCenter)
+			if e.EnableLocalCache() && e.TTL() > entry.DefaultLocalExpiration().Seconds() {
+				_ = f.cache.Set(e.Key(), e.Data(), entry.DefaultLocalExpiration())
 			}
 			found[e] = struct{}{}
 		default:
 			return nil, err
 		}
 	}
+
 	missEntries := make([]*entry.Entry, 0, len(es))
 	for _, e := range es {
 		_, ok := found[e]
