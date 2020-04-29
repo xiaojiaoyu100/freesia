@@ -1,7 +1,8 @@
 package entry
 
 const (
-	_ int = iota
+	// init state
+	sourceUnknown int = iota
 	// SourceLocal local cache
 	SourceLocal
 	// SourceCenter center cache

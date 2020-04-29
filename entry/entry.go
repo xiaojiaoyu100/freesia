@@ -125,6 +125,14 @@ func (e *Entry) SourceCenter() bool {
 	return e.loadFrom == SourceCenter
 }
 
+// Reset resets a entry.
+func (e *Entry) Reset() {
+	e.value = nil
+	e.data = e.data[:0]
+	e.ttl = 0
+	e.loadFrom = sourceUnknown
+}
+
 // CheckSet checks set conditions.
 func checkSet(e *Entry) error {
 	if int64(e.exp) == 0 {
@@ -132,6 +140,9 @@ func checkSet(e *Entry) error {
 	}
 	if e.enableLocalCache && int64(e.localExp) == 0 {
 		return errors.New("local exp must be greater than zero when enabling local cache")
+	}
+	if e.value == nil {
+		return errors.New("value must be non nil")
 	}
 	return nil
 }

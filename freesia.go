@@ -135,6 +135,7 @@ func (f *Freesia) Get(e *entry.Entry) error {
 		{
 			err = e.Decode(b)
 			if err != nil {
+				e.Reset()
 				return redis.Nil
 			}
 			ttl, _ := ttlCmd.Result()
@@ -144,6 +145,9 @@ func (f *Freesia) Get(e *entry.Entry) error {
 				_ = f.cache.Set(e.Key(), e.Data(), entry.DefaultLocalExpiration())
 			}
 		}
+	case redis.Nil:
+		e.Reset()
+		return redis.Nil
 	default:
 		return err
 	}
@@ -209,9 +213,11 @@ func (f *Freesia) batchGet(es ...*entry.Entry) ([]*entry.Entry, error) {
 		b, err := entryCmd.StringCmd.Bytes()
 		switch {
 		case errors.Is(err, redis.Nil):
+			e.Reset()
 		case err == nil:
 			err = e.Decode(b)
 			if err != nil {
+				e.Reset()
 				continue
 			}
 			ttl, _ := entryCmd.DurationCmd.Result()
