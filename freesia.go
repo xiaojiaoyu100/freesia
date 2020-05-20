@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
 	"github.com/vmihailenco/msgpack"
 	"github.com/xiaojiaoyu100/curlew"
