@@ -19,6 +19,7 @@ type Freesia struct {
 	store      Store
 	cache      *roc.Cache
 	dispatcher *curlew.Dispatcher
+	channel    string
 	pubSub     *redis.PubSub
 	logger     *logrus.Logger
 }
@@ -41,13 +42,10 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	f.pubSub = f.store.Subscribe(channel)
-
-	f.sub()
+	f.channel = channel
 
 	logger := logrus.New()
-	logger.SetLevel(logrus.InfoLevel)
+	logger.SetLevel(logrus.WarnLevel)
 	logger.SetOutput(os.Stdout)
 	logger.SetFormatter(&logrus.JSONFormatter{
 		TimestampFormat: "2006-01-02 15:04:05",
@@ -60,6 +58,9 @@ func New(store Store, setters ...Setter) (*Freesia, error) {
 			return nil, err
 		}
 	}
+
+	f.pubSub = f.store.Subscribe(f.channel)
+	f.sub()
 
 	return f, nil
 }
