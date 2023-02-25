@@ -11,6 +11,6 @@ require (
 	github.com/xiaojiaoyu100/lizard v0.0.3
 	github.com/xiaojiaoyu100/roc v0.2.1
 	golang.org/x/net v0.0.0-20191021144547-ec77196f6094 // indirect
-	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 )
